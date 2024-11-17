@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 from tabulate import tabulate
 from models.security_pair import securityPair
+from models.table import tabulateTable
 from core.logger import logger
 from db.dashboard import DashboardDB
 
@@ -13,7 +14,7 @@ def main(dashboard):
         "-s",
         "--search",
         nargs=2,
-        help="Specify the Underlying Security and LETF ticker to analyse",
+        help="Query the Underlying Security and LETF ticker to analyse - Input the underlying security ticker and then LETF ticker",
         required=False,
     )
 
@@ -21,7 +22,7 @@ def main(dashboard):
         "-a",
         "--add",
         nargs=2,
-        help="Add a LETF and Underlying Security ticker to your dashboard",
+        help="Add a security pair to your dashboard - Input the underlying security ticker and then LETF ticker",
         required=False,
     )
 
@@ -59,9 +60,7 @@ def main(dashboard):
                 "Change": pair.main(),
             }
         ]
-        df = pd.DataFrame(data)
-        tabulateData = df.values.tolist()
-        print(tabulate(tabulateData, headers=df.columns, tablefmt="pretty"))
+        tabulateTable(data)
     elif args.add:
         dashboard.add_record(args.add[0], args.add[1])
         logger.log("info", f"Added {args.add[0], args.add[1]} to dashboard")
@@ -76,10 +75,7 @@ def main(dashboard):
             data.append(
                 {"Underlying": db_pair[1], "LETF": db_pair[2], "Change": pair.main()}
             )
-
-        df = pd.DataFrame(data)
-        tabulateData = df.values.tolist()
-        print(tabulate(tabulateData, headers=df.columns, tablefmt="pretty"))
+        tabulateTable(data)
 
 
 if __name__ == "__main__":
