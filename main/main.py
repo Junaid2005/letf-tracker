@@ -1,13 +1,21 @@
 import argparse
-import pandas as pd
-from tabulate import tabulate
+from dotenv import load_dotenv
+import os
+from models.email import send_email
 from models.security_pair import securityPair
 from models.table import tabulateTable
 from core.logger import logger
 from db.dashboard import DashboardDB
 
 
-def main(dashboard):
+def loadEnv():
+    load_dotenv()
+    sender_email = os.getenv("EMAIL_USER")
+    sender_password = os.getenv("EMAIL_PASS")
+    return sender_email, sender_password
+
+
+def main(dashboard, sender_email=None, sender_password=None, allow_email=False):
     parser = argparse.ArgumentParser(description="LETF Tracker")
 
     parser.add_argument(
@@ -46,6 +54,10 @@ def main(dashboard):
         "-de", "--debug", action="store_true", help="Enable debug mode", required=False
     )
 
+    parser.add_argument(
+        "-e", "--email", action="store_true", help="Email results", required=False
+    )
+
     args = parser.parse_args()
 
     if args.debug:
@@ -60,7 +72,7 @@ def main(dashboard):
                 "Change": pair.main(),
             }
         ]
-        tabulateTable(data)
+        tabulateTable(data).print_table()
     elif args.add:
         dashboard.add_record(args.add[0], args.add[1])
         logger.log("info", f"Added {args.add[0], args.add[1]} to dashboard")
@@ -75,9 +87,25 @@ def main(dashboard):
             data.append(
                 {"Underlying": db_pair[1], "LETF": db_pair[2], "Change": pair.main()}
             )
-        tabulateTable(data)
+
+        if not args.email:
+            tabulateTable(data).print_table()
+        else:
+            if allow_email:
+                html_table = tabulateTable(data).prepare_html_table()
+                send_email(sender_email, sender_password, html_table)
+            else:
+                logger.log("error", "Please set up your .env correctly to use email")
 
 
 if __name__ == "__main__":
     dashboard = DashboardDB()
-    main(dashboard)
+    sender_email, sender_password = loadEnv()
+    if sender_email and sender_password:
+        main(dashboard, sender_email, sender_password, True)
+    else:
+        logger.log(
+            "warning",
+            "Disabling email functionality... .env is not set up correctly. See the README.md for more info on how to do so.",
+        )
+        main(dashboard, allow_email=False)
