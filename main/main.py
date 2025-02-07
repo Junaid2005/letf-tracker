@@ -142,8 +142,7 @@ def main():
                 html_table = TabulateTable(data).prepare_html_table()
                 send_email(sender_email, sender_password, html_table)
             else:
-                logger.log(
-                    "error",
+                logger.logger.error(
                     """Your .env is not set up correctly to use email. 
                     See the README.md for more info""",
                 )

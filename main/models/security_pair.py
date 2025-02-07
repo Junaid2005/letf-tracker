@@ -82,7 +82,7 @@ class SecurityPair:
         if security["currencyCode"] == "GBX":
             raw_value /= 100
             security["currencyCode"] = "GBP"
-            logger.debug(f"Converted GBX to GBP. New value is {raw_value}")
+            logger.logger.debug(f"Converted GBX to GBP. New value is {raw_value}")
 
         if security["currencyCode"] != base_ccy:
             raw_value = ccy_rates.convert(raw_value, security["currencyCode"], base_ccy)
@@ -106,11 +106,11 @@ class SecurityPair:
         name = yf_ticker.security.info.get("shortName", "")
         cal = self.__get_exchange_cal(yf_ticker)
         if isinstance(cal, str):
-            logger.log("error", cal)
+            logger.logger.error(cal)
             return False
         schedule = self.__get_schedule(cal)
         if isinstance(schedule, str):
-            logger.log("error", f"{schedule} for {name}")
+            logger.logger.error(f"{schedule} for {name}")
             return False
 
         now_utc = datetime.now(pytz.utc)
@@ -122,7 +122,7 @@ class SecurityPair:
             is_open = cal.open_at_time(schedule, converted_timestamp)
         except (ValueError, IndexError):
             is_open = False
-        logger.debug(f"{name} is currently {'trading' if is_open else 'closed'}")
+        logger.logger.debug(f"{name} is currently {'trading' if is_open else 'closed'}")
         return is_open
 
     def is_pair_live(self) -> bool:
@@ -147,7 +147,7 @@ class SecurityPair:
 
         for close in recent_closes:
             if close < datetime.now(pytz.utc):
-                logger.debug(f"{name} closed at {close}")
+                logger.logger.debug(f"{name} closed at {close}")
                 return close
 
         return "Error: Can't find a recent close"
@@ -156,7 +156,7 @@ class SecurityPair:
         """Multiplies percentage return by leverage found"""
         leverage = int(leverage[:-1])
         result = leverage * change
-        logger.debug(f"Multiplied {leverage} by {change} resulting in {result}")
+        logger.logger.debug(f"Multiplied {leverage} by {change} resulting in {result}")
         return f"{round(result, 2)}%"
 
     def __get_exchange_cal(self, yf_ticker):
@@ -187,7 +187,7 @@ class SecurityPair:
             )
             return schedule
         except Exception:
-            logger.log("warn", "Exchange has no extended hours")
+            logger.logger.warning("Exchange has no extended hours")
             try:
                 schedule = exchange_cal.schedule(
                     start_date=start,

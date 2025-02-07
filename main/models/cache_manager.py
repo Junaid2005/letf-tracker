@@ -71,9 +71,9 @@ class CacheManager:
         2. Adding to each security with its own pertaining data
         """
         if not self.is_portfolio_expired():
-            logger.debug("Portfolio cache is still valid")
+            logger.logger.debug("Portfolio cache is still valid")
             return
-        logger.debug("Portfolio cache is expired, refreshing...")
+        logger.logger.debug("Portfolio cache is expired, refreshing...")
         self.init_account_metadata()
         raw_portfolio = get_portfolio()
         raw_instruments = get_all_instruments()
@@ -100,7 +100,7 @@ class CacheManager:
 
             if security is None:
                 error_message = f"Could not find {pair[2]} in portfolio"
-                logger.log("error", error_message)
+                logger.logger.error(error_message)
                 portfolio_object = {"key": pair[2], "error": error_message}
                 cached_portfolio.append(portfolio_object)
                 continue
@@ -124,18 +124,18 @@ class CacheManager:
 
             if metadata is None:
                 error_message = f"Could not find metadata for {security['ticker']}"
-                logger.log("error", error_message)
+                logger.logger.error(error_message)
                 portfolio_object = {"key": pair[2], "error": error_message}
                 cached_portfolio.append(portfolio_object)
                 continue
-            logger.debug(f"Found {metadata['ticker']} in instruments")
+            logger.logger.debug(f"Found {metadata['ticker']} in instruments")
 
             portfolio_object = {**metadata, **security}
             cached_portfolio.append(portfolio_object)
 
         self.set("CACHED_PORTFOLIO", cached_portfolio)
         self.set_last_portfolio_update_time()
-        logger.debug(f"Replaced cache with {len(cached_portfolio)} items")
+        logger.logger.debug(f"Replaced cache with {len(cached_portfolio)} items")
 
 
 cache_manager = CacheManager()

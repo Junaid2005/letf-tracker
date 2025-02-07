@@ -35,10 +35,10 @@ class YFinanceSecurity:
                 "short" in long_name.lower() or "inverse" in long_name.lower()
             ) and leverage[0] != "-":
                 leverage = f"-{leverage}"
-            logger.debug(f"Found leverage for {self.ticker} to be {leverage}")
+            logger.logger.debug(f"Found leverage for {self.ticker} to be {leverage}")
             return leverage
 
-        logger.debug(error_message)
+        logger.logger.debug(error_message)
         return error_message
 
     def get_timezone(self, log=True):
@@ -56,7 +56,7 @@ class YFinanceSecurity:
         open_start_range = start_timestamp - timedelta(minutes=5)
         open_end_range = start_timestamp + timedelta(minutes=5)
 
-        logger.debug(f"Current datetime {current_timestamp}")
+        logger.logger.debug(f"Current datetime {current_timestamp}")
 
         data = self.security.history(
             start=open_start_range,
@@ -65,7 +65,7 @@ class YFinanceSecurity:
             prepost=True,
         )
         if data.empty:
-            logger.debug(f"Unable to price {self.ticker} at {start_timestamp}")
+            logger.logger.debug(f"Unable to price {self.ticker} at {start_timestamp}")
             return "Error getting pricing"
         if start_timestamp in data.index:
             start_price = data.loc[start_timestamp].Open
