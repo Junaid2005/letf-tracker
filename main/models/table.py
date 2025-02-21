@@ -4,6 +4,8 @@ from datetime import datetime
 from colorama import Fore, Style
 from tabulate import tabulate
 import pandas as pd
+from babel.numbers import get_currency_symbol
+from models.cache_manager import cache_manager
 
 
 class TabulateTable:
@@ -12,6 +14,11 @@ class TabulateTable:
     def __init__(self, data):
         self.data = data
         self.df = pd.DataFrame(data)
+
+        if "Ext Hours" in self.df.columns:
+            account_currency = cache_manager.get_account_currency()
+            col_name_ccy = f"Ext Hours {get_currency_symbol(account_currency)}"
+            self.df.rename(columns={"Ext Hours": col_name_ccy}, inplace=True)
 
     def reformat_data(self, data):
         """Apply colour formatting for the numerical columns"""
