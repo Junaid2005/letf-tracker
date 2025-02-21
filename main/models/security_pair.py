@@ -47,7 +47,7 @@ class SecurityPair:
         if not isinstance(close_time, pd.Timestamp):
             return close_time
 
-        target_timezone = self.underlying_ticker.get_timezone()
+        target_timezone = self.__get_timezone(self.underlying_ticker)
         open_time = close_time.astimezone(target_timezone)
 
         change = self.underlying_ticker.get_pricing_change(
@@ -100,10 +100,10 @@ class SecurityPair:
         logger.logger.debug(
             f"Multiplied {original_value} by {change} to get {live_value}"
         )
-        return live_value
+        return round(live_value, 2)
 
     def __is_security_live(self, yf_ticker):
-        name = yf_ticker.security.info.get("shortName", "")
+        name = yf_ticker.security.info.get("longName", "<security>")
         cal = self.__get_exchange_cal(yf_ticker)
         if isinstance(cal, str):
             logger.logger.error(cal)
@@ -116,7 +116,7 @@ class SecurityPair:
         now_utc = datetime.now(pytz.utc)
         now_timestamp = pd.Timestamp(now_utc)
         converted_timestamp = now_timestamp.tz_convert(
-            yf_ticker.get_timezone(log=False)
+            self.__get_timezone(yf_ticker, log=False)
         )
         try:
             is_open = cal.open_at_time(schedule, converted_timestamp)
@@ -164,7 +164,7 @@ class SecurityPair:
         exchange_str = yf_ticker_info.get(
             "exchange", f"Error: Can't find exchange for {yf_ticker}"
         )
-        exchange_map = {"NMS": "NASDAQ", "NGM": "NASDAQ"}
+        exchange_map = {"NMS": "NASDAQ", "NGM": "NASDAQ", "BTS": "BATS"}
         try:
             exchange_cal = mcal.get_calendar(
                 exchange_map.get(exchange_str, exchange_str)
@@ -187,7 +187,7 @@ class SecurityPair:
             )
             return schedule
         except Exception:
-            logger.logger.warning("Exchange has no extended hours")
+            logger.logger.warning(f"{exchange_cal.name} has no extended hours")
             try:
                 schedule = exchange_cal.schedule(
                     start_date=start,
@@ -196,3 +196,15 @@ class SecurityPair:
                 return schedule
             except Exception:
                 return "Error getting schedule for exchange"
+
+    def __get_timezone(self, yf_ticker, log=True):
+        """Returns a pytz timezone for a security"""
+        cal = self.__get_exchange_cal(yf_ticker)
+        if isinstance(cal, str):
+            logger.logger.error(cal)
+            return False
+        if log:
+            logger.logger.debug(
+                f"{yf_ticker.security.info.get("symbol")} found to be in timezone {cal.tz}"
+            )
+        return cal.tz
