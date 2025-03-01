@@ -37,8 +37,8 @@ def dashboard_viewer_component():
         st.session_state["visibility_toggled"] = False
 
     with st.container(border=True):
-        # this is shit and wont work on mobile
-        cols = st.columns(12)
+        # still dodgy on mobile
+        cols = st.columns([0.1,1])
 
         with cols[0]:
             icon = "link_off" if st.session_state.get("broker_toggled") else "link"
