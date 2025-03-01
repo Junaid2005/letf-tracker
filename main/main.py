@@ -107,6 +107,9 @@ def main():
         dashboard.delete_record(args.remove[0], args.remove[1])
     elif args.dashboard:
         records = dashboard.get_all_records()
+        if not records:
+            logger.logger.info("No records found in your dashboard")
+            return
         data = []
         t212_valid = False
         ccy_rates = None
