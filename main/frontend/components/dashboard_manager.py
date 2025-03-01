@@ -17,6 +17,16 @@ from frontend.helpers.helper import (
 from db.dashboard import dashboard
 
 
+def manage_record(action, underlying, letf):
+    """Manage a record in your dashboard"""
+    if action == "add":
+        dashboard.add_record(underlying, letf)
+        st.info(f"Added {underlying} and {letf} to your dashboard")
+    else:
+        dashboard.delete_record(underlying, letf)
+        # st.info(f"Removed {underlying} and {letf} to your dashboard")
+
+
 def dashboard_manager_component():
     """Load the dashboard manager component"""
     with st.container(border=True):
@@ -47,13 +57,16 @@ def dashboard_manager_component():
                     st.button(
                         "Remove from dashboard",
                         use_container_width=True,
-                        on_click=lambda: dashboard.delete_record(underlying, letf),
+                        on_click=lambda: manage_record("remove", underlying, letf),
                     )
                 else:
                     st.button(
                         "Add to dashboard",
                         use_container_width=True,
-                        on_click=lambda: dashboard.add_record(underlying, letf),
+                        on_click=lambda: manage_record("add", underlying, letf),
                     )
             else:
-                st.error("At least one of your tickers is invalid")
+                st.error(
+                    """At least one of your tickers is invalid. 
+                    Try converting your LETF to a RIC (as done in the placeholder)"""
+                )

@@ -77,7 +77,7 @@ def dashboard_viewer_component():
                 or not st.session_state.get("broker_toggled"),
                 on_click=lambda: toggle_state("visibility_toggled"),
             )
-   
+
         if not records:
             st.write("No records to show")
             return
