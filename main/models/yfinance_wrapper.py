@@ -21,7 +21,11 @@ class YFinanceSecurity:
 
     def is_real_security(self) -> bool:
         """Returns whether yfinance found the ticker"""
-        return bool(self.security.info.get("longName"))
+        try:
+            self.security.info.get("longName")
+            return True
+        except AttributeError:
+            return False
 
     def get_leverage(self) -> str:
         """Returns the leverage for a security"""
